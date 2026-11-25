@@ -1,4 +1,4 @@
-namespace CreditRequests.Api.Domain;
+namespace CreditRequests.Domain;
 
 public enum CreditRequestStatus
 {

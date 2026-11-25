@@ -1,7 +1,7 @@
-using CreditRequests.Api.Domain;
+using CreditRequests.Domain;
 using Microsoft.EntityFrameworkCore;
 
-namespace CreditRequests.Api.Data;
+namespace CreditRequests.Infrastructure.Persistence;
 
 public sealed class CreditRequestsDbContext(DbContextOptions<CreditRequestsDbContext> options) : DbContext(options)
 {

@@ -1,7 +1,11 @@
+[CmdletBinding()]
+param(
+    [string]$AppDirectory = (Join-Path $PSScriptRoot 'CreditRequests.Api/bin/Debug/net10.0')
+)
+
 $ErrorActionPreference = 'Stop'
 $baseUrl = 'http://localhost:5071'
 $api = "$baseUrl/api/credit-requests"
-$appDirectory = Join-Path $PSScriptRoot 'CreditRequests.Api/bin/Debug/net10.0'
 
 function Invoke-Api {
     param($Method, $Url, $ExpectedStatus, $Body)
@@ -56,9 +60,10 @@ function Stop-Api {
 }
 
 if (-not (Test-Path (Join-Path $appDirectory 'CreditRequests.Api.dll'))) {
-    throw 'Compila primero el backend con dotnet build en modo Debug.'
+    throw "No se encontró CreditRequests.Api.dll en '$appDirectory'. Compila la API y revisa el valor de -AppDirectory."
 }
 
+$appDirectory = (Resolve-Path -LiteralPath $appDirectory).Path
 $previousEnvironment = $env:ASPNETCORE_ENVIRONMENT
 $env:ASPNETCORE_ENVIRONMENT = 'Development'
 $process = $null

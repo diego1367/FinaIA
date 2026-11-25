@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+**/.angular/
+.dotnet-home/
+.npm-cache/
+*.user
+*.mdf
+*.ldf
+.env
+.env.*
+appsettings.Local.json

@@ -1,0 +1,46 @@
+@api = http://localhost:5069/api/credit-requests
+@id = 1
+
+GET {{api}}
+
+###
+
+POST {{api}}
+Content-Type: application/json
+
+{
+  "documentNumber": "DEMO001",
+  "fullName": "Persona de prueba",
+  "requestedAmount": 5000000.25,
+  "termMonths": 12
+}
+
+###
+# Sustituye @id con el id devuelto por POST.
+GET {{api}}/{{id}}
+
+###
+
+PATCH {{api}}/{{id}}/status
+Content-Type: application/json
+
+{ "status": "Approved" }
+
+###
+# Tras aprobar, el segundo cambio debe devolver 409.
+PATCH {{api}}/{{id}}/status
+Content-Type: application/json
+
+{ "status": "Rejected" }
+
+###
+
+POST {{api}}
+Content-Type: application/json
+
+{
+  "documentNumber": "?",
+  "fullName": "",
+  "requestedAmount": -1,
+  "termMonths": 121
+}

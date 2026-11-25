@@ -1,0 +1,88 @@
+<main class="page-shell">
+  <header class="hero">
+    <div class="hero-copy">
+      <h1>Solicitudes de crédito</h1>
+      <p class="subtitle">Registra y revisa solicitudes ficticias en un solo lugar.</p>
+    </div>
+  </header>
+
+  <section class="content-grid" aria-label="Gestión de solicitudes">
+    <section class="panel form-panel">
+      <div class="section-heading">
+        <h2>Crear solicitud</h2>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        @let documentError = fieldError('documentNumber', 'Ingresa entre 6 y 20 caracteres alfanuméricos.');
+        @let nameError = fieldError('fullName', 'Ingresa un nombre de entre 2 y 100 caracteres.');
+        @let amountError = fieldError('requestedAmount', 'Ingresa un monto positivo, con hasta 13 dígitos enteros y dos decimales.');
+        @let termError = fieldError('termMonths', 'Ingresa un número entero entre 1 y 120.');
+        <label for="documentNumber">Número de documento</label>
+        <input id="documentNumber" formControlName="documentNumber" autocomplete="off" placeholder="Ej. DEMO001"
+          (input)="clearFieldError('documentNumber')" [attr.aria-invalid]="!!documentError" [attr.aria-describedby]="documentError ? 'document-error' : null" />
+        @if (documentError) { <small id="document-error" class="field-error">{{ documentError }}</small> }
+        <label for="fullName">Nombre completo</label>
+        <input id="fullName" formControlName="fullName" autocomplete="off" placeholder="Nombre ficticio"
+          (input)="clearFieldError('fullName')" [attr.aria-invalid]="!!nameError" [attr.aria-describedby]="nameError ? 'name-error' : null" />
+        @if (nameError) { <small id="name-error" class="field-error">{{ nameError }}</small> }
+        <div class="field-row">
+          <div>
+            <label for="requestedAmount">Monto solicitado (COP)</label>
+            <input id="requestedAmount" type="number" min="0.01" step="0.01" formControlName="requestedAmount" placeholder="5000000"
+              (input)="clearFieldError('requestedAmount')" [attr.aria-invalid]="!!amountError" [attr.aria-describedby]="amountError ? 'amount-error' : null" />
+            @if (amountError) { <small id="amount-error" class="field-error">{{ amountError }}</small> }
+          </div>
+          <div>
+            <label for="termMonths">Plazo (meses)</label>
+            <input id="termMonths" type="number" min="1" max="120" step="1" formControlName="termMonths"
+              (input)="clearFieldError('termMonths')" [attr.aria-invalid]="!!termError" [attr.aria-describedby]="termError ? 'term-error' : null" />
+            @if (termError) { <small id="term-error" class="field-error">{{ termError }}</small> }
+          </div>
+        </div>
+        <button class="primary-button" type="submit" [disabled]="saving() || loading()">
+          {{ saving() ? 'Guardando…' : 'Registrar solicitud' }}
+        </button>
+      </form>
+      <p class="form-note"><span aria-hidden="true">ⓘ</span> La solicitud se crea con estado pendiente.</p>
+    </section>
+
+    <section class="panel list-panel">
+      <div class="section-heading list-heading">
+        <h2>Solicitudes registradas</h2>
+        <button class="retry" type="button" (click)="loadRequests()" [disabled]="loading() || saving() || pendingAction() !== null">
+          Actualizar
+        </button>
+      </div>
+      @if (loadError()) { <div class="message error-message" role="alert">{{ loadError() }}</div> }
+      @if (errorMessage()) { <div class="message error-message" role="alert">{{ errorMessage() }}</div> }
+      @if (successMessage()) { <div class="message success-message" role="status">{{ successMessage() }}</div> }
+      @if (loading()) {
+        <div class="loading-state" role="status">Consultando solicitudes…</div>
+      } @else if (requests().length === 0 && !loadError()) {
+        <div class="empty-state">Aún no hay solicitudes.</div>
+      } @else if (requests().length > 0) {
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Solicitante</th><th>Monto / plazo</th><th>Estado</th><th class="actions-heading">Acciones</th></tr></thead>
+            <tbody>
+              @for (request of requests(); track request.id) {
+                <tr>
+                  <td><strong>{{ request.fullName }}</strong><span class="sub-cell">Doc. {{ request.documentNumber }}</span></td>
+                  <td><strong>{{ request.requestedAmount | currency:'COP':'symbol-narrow':'1.0-2' }}</strong><span class="sub-cell">{{ request.termMonths }} meses</span></td>
+                  <td><span class="status" [class.pending]="request.status === 'Pending'" [class.approved]="request.status === 'Approved'" [class.rejected]="request.status === 'Rejected'"><span class="status-dot"></span>{{ statusLabel(request.status) }}</span><span class="sub-cell">{{ request.createdAtUtc | date:'dd/MM/yyyy' }}</span></td>
+                  <td class="actions-cell">
+                    @if (request.status === 'Pending') {
+                      <button class="decision" type="button" [disabled]="pendingAction() !== null" [attr.aria-label]="'Aprobar solicitud de ' + request.fullName" (click)="resolve(request, 'Approved')">Aprobar</button>
+                      <button class="decision reject" type="button" [disabled]="pendingAction() !== null" [attr.aria-label]="'Rechazar solicitud de ' + request.fullName" (click)="resolve(request, 'Rejected')">Rechazar</button>
+                      @if (pendingAction() === request.id) { <span class="sub-cell">Actualizando…</span> }
+                    } @else { <span class="resolved-label">Resuelta</span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </section>
+  <footer>Entorno de demostración · Datos ficticios</footer>
+</main>
